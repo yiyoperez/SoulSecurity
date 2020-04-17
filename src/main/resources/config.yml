@@ -1,0 +1,49 @@
+#
+# ,                  ,
+# '"\_            ,/",
+#  \.'\_        ,/ ,/  ┌─.┌─.┬ ┬┬  ┌─.┌─.┌─.┬ ┬┬─.┬┌┬.┬ ┬
+#    \.'\_    ,/ ,/    └─.│ ││ ││  └─.├┤ │  │ │├┬┘│ │ └┬┘
+#      \.'\__/ ,/      └─┘└─┘└─┘┴─┘└─┘└─┘└─┘└─┘┴└─┴ ┴  ┴
+#        \{00}/
+#         \  /         Developed by Sliide_
+#       +==""==+
+#
+
+
+# This is in seconds
+Notifications-Interval: 5
+
+# Kick the player on wrong pin?
+Kick-Wrong: true
+
+# Pin lenght
+Lenght:
+  Min: 4
+  Max: 16
+
+# Plugins Messages
+Help-Message:
+  - ''
+  - ' &c&lSoulSecurity'
+  - ''
+  - '&e/%command% help &fThis message'
+  - '&e/%command% unregister <Player> &fUnregister member.'
+  - '&e/%command% changepin <Player> <PIN> &fChange registered member PIN.'
+  - ''
+NoPermissions: "&cYou don't have permissions to use that."
+PinLenght: '&cThe selected PIN is too short or long.'
+Registered: "&cYou already have a security PIN."
+Unregistered: "&cYou are not registered."
+Created: "&eYour security PIN &7(&f%pin%&7) &ehas been created. &cDon't forget it..."
+Correct: "&aPIN security has been successful."
+Incorrect: "&cThe security PIN is incorrect."
+Notify: "&3Please provide your security PIN."
+Setup: "&eYour account has been detected as staff member. &ePlease use /setpin"
+Logged: "&aYou already passed PIN authentication!"
+NotNumber: "&cPIN selected is not a number."
+Usage: "&cUsage: /%command% <PIN>"
+
+# Do NOT touch this.
+# This list is saved when the server shutdown.
+# Members List.
+Members: {}
