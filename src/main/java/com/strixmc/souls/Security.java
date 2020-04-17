@@ -64,22 +64,16 @@ public class Security extends JavaPlugin {
     private void securityScheduler() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
-/*
-                Bukkit.broadcastMessage(Utils.c("&eHOOK &7" + authMeHook.isHookActive()
-                        + "&f, &eAuth &7" + authMeHook.authMeApi.isAuthenticated(player) +
-                        "&f, &eMember &7" + manager.containsMember(player.getName()) +
-                        "&f, &ePin &7" + pin.containsMember(player.getName()) +
-                        "&f, &eOP &7" + player.isOp()));
-*/
+                //Bukkit.broadcastMessage(Utils.c("&eHOOK &7" + authMeHook.isHookActive() + "&f, &eAuth &7" + authMeHook.authMeApi.isAuthenticated(player) + "&f, &eMember &7" + manager.containsMember(player.getName()) + "&f, &ePin &7" + pin.containsMember(player.getName()) + "&f, &eOP &7" + player.isOp()));
                 if (authMeHook.isHookActive()) {
                     if (authMeHook.authMeApi.isAuthenticated(player)) {
-                        if (pin.containsMember(player.getName()) && !manager.containsMember(player.getName()) && player.hasPermission("soul.staff") || player.isOp() || !pin.containsMember(player.getName()) && !manager.containsMember(player.getName())) {
+                        if ((pin.containsMember(player.getName()) && !manager.containsMember(player.getName()) || player.isOp() || !pin.containsMember(player.getName()) && !manager.containsMember(player.getName())) && player.hasPermission("soul.staff")) {
                             Member member = new Member(player.getPlayer(), pin.containsMember(player.getName()), pin.getPIN(player.getName()));
                             manager.addMember(member);
                         }
                     }
                 } else {
-                    if (pin.containsMember(player.getName()) && !manager.containsMember(player.getName()) && player.hasPermission("soul.staff") || player.isOp() || !pin.containsMember(player.getName()) && !manager.containsMember(player.getName())) {
+                    if ((pin.containsMember(player.getName()) && !manager.containsMember(player.getName()) || player.isOp() || !pin.containsMember(player.getName()) && !manager.containsMember(player.getName())) && player.hasPermission("soul.staff")) {
                         Member member = new Member(player.getPlayer(), pin.containsMember(player.getName()), pin.getPIN(player.getName()));
                         manager.addMember(member);
                     }
