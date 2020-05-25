@@ -105,18 +105,6 @@ public class GlobalListeners implements Listener {
     }
 
     @EventHandler
-    public void inventoryClick(InventoryClickEvent event) {
-        Player p = (Player) event.getWhoClicked();
-
-        MembersManager manager = plugin.getManager();
-        if (manager.containsMember(p.getName())) {
-            if (!manager.getMember(p.getName()).isRegistered() || !manager.getMember(p.getName()).isVerified()) {
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler
     public void entityInteract(PlayerInteractEntityEvent event) {
         Player p = event.getPlayer();
         MembersManager manager = plugin.getManager();
