@@ -1,20 +1,9 @@
 name: SoulSecurity
 main: com.strixmc.souls.Security
-version: 1.0-BETA.1
+version: 1.1.0-BETA.3
 author: Sliide_
 softdepend:
   - AuthMe
-
-commands:
-  pin:
-    description: Allows you to login using your security PIN.
-  setpin:
-    description: Allows you to register your security PIN.
-  soul:
-    permission: soul.admin
-    permission-message: '§cSorry, but you do not have admin permissions to perform this command.'
-    description: Main SoulSecurity management command.
-    aliases: [souls,soulsecurity]
 
 permissions:
   souls.admin:

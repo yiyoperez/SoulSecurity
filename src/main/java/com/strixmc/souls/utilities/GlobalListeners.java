@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 
@@ -16,6 +17,27 @@ public class GlobalListeners implements Listener {
 
     public GlobalListeners(Security plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void playerJoin(PlayerJoinEvent event) {
+        Player p = event.getPlayer();
+
+        if (p.isOp() || p.hasPermission("soul.admin")) {
+            UpdateChecker.init(plugin, 77520).requestUpdateCheck().whenComplete((result, exception) -> {
+                if (result.requiresUpdate()) {
+                    p.sendMessage(String.format("An update is available! SoulSecurity %s may be downloaded on SpigotMC", result.getNewestVersion()));
+                    return;
+                }
+
+                UpdateChecker.UpdateReason reason = result.getReason();
+                if (reason == UpdateChecker.UpdateReason.UP_TO_DATE) {
+                    p.sendMessage(String.format("Your version of SoulSecurity (%s) is up to date!", result.getNewestVersion()));
+                } else if (reason == UpdateChecker.UpdateReason.UNRELEASED_VERSION) {
+                    p.sendMessage(String.format("Your version of SoulSecurity (%s) is more recent than the one publicly available. Are you on a development build?", result.getNewestVersion()));
+                }
+            });
+        }
     }
 
     @EventHandler
@@ -47,7 +69,20 @@ public class GlobalListeners implements Listener {
     }
 
     @EventHandler
-    public void interact(final PlayerInteractEvent event) {
+    public void damage(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player p = (Player) event.getEntity();
+            MembersManager manager = plugin.getManager();
+            if (manager.containsMember(p.getName())) {
+                if (!manager.getMember(p.getName()).isVerified() || !manager.getMember(p.getName()).isRegistered()) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void interact(PlayerInteractEvent event) {
         Player p = event.getPlayer();
         MembersManager manager = plugin.getManager();
         if (manager.containsMember(p.getName())) {
@@ -58,7 +93,31 @@ public class GlobalListeners implements Listener {
     }
 
     @EventHandler
-    public void entityinteract(final PlayerInteractEntityEvent event) {
+    public void inventoryDrop(PlayerDropItemEvent event) {
+        Player p = event.getPlayer();
+
+        MembersManager manager = plugin.getManager();
+        if (manager.containsMember(p.getName())) {
+            if (!manager.getMember(p.getName()).isRegistered() || !manager.getMember(p.getName()).isVerified()) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void inventoryClick(InventoryClickEvent event) {
+        Player p = (Player) event.getWhoClicked();
+
+        MembersManager manager = plugin.getManager();
+        if (manager.containsMember(p.getName())) {
+            if (!manager.getMember(p.getName()).isRegistered() || !manager.getMember(p.getName()).isVerified()) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void entityInteract(PlayerInteractEntityEvent event) {
         Player p = event.getPlayer();
         MembersManager manager = plugin.getManager();
         if (manager.containsMember(p.getName())) {

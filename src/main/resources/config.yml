@@ -26,9 +26,9 @@ Help-Message:
   - ''
   - ' &c&lSoulSecurity'
   - ''
-  - '&e/%command% help &fThis message'
-  - '&e/%command% unregister <Player> &fUnregister member.'
-  - '&e/%command% changepin <Player> <PIN> &fChange registered member PIN.'
+  - '&e/<command> help &fThis message'
+  - '&e/<command> unregister <Player> &fUnregister member.'
+  - '&e/<command> changepin <Player> <PIN> &fChange registered member PIN.'
   - ''
 NoPermissions: "&cYou don't have permissions to use that."
 PinLenght: '&cThe selected PIN is too short or long.'

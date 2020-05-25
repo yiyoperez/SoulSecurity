@@ -4,12 +4,14 @@ import com.strixmc.souls.Security;
 import com.strixmc.souls.utilities.MembersManager;
 import com.strixmc.souls.utilities.PIN;
 import com.strixmc.souls.utilities.Utils;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
+import me.fixeddev.ebcm.parametric.CommandClass;
+import me.fixeddev.ebcm.parametric.annotation.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class SetPin implements CommandExecutor {
+@ACommand(names = "setpin", desc = "Allows you to register your security PIN.", permission = "soul.command.setpin", permissionMessage = "Sorry, but you do not have admin permissions to perform this command.")
+@Usage(usage = "/<command> <pin>")
+public class SetPin implements CommandClass {
 
     private Security plugin;
 
@@ -17,44 +19,40 @@ public class SetPin implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (sender instanceof Player) {
-            Player p = (Player) sender;
-            if (!p.hasPermission("soul.command.setpin")){
-                p.sendMessage(Utils.c(plugin.getConfig().getString("NoPermissions")));
+    @ACommand(names = "", desc = "Allows you to register your security PIN.", permission = "soul.command.setpin", permissionMessage = "Sorry, but you do not have admin permissions to perform this command.")
+    public boolean command(@Injected CommandSender sender, @Default("Missing") @Named("pin") String pin) {
+        if (!(sender instanceof Player)) return true;
+        Player p = (Player) sender;
+
+        if (plugin.getManager().getMember(p.getName()).isRegistered()) {
+            p.sendMessage(Utils.c(plugin.getConfig().getString("Registered")));
+            return true;
+        }
+
+        if (!pin.equals("Missing")) {
+
+            if (!Utils.isNumeric(pin)) {
+                p.sendMessage(Utils.c(plugin.getConfig().getString("NotNumber")));
                 return true;
             }
-            if (args.length != 1) {
-                p.sendMessage(Utils.c(plugin.getConfig().getString("Usage").replace("%command%", label)));
-            } else {
 
-                if (plugin.getManager().getMember(p.getName()).isRegistered()) {
-                    p.sendMessage(Utils.c(plugin.getConfig().getString("Registered")));
-                    return true;
-                }
-
-                if (!Utils.isNumeric(args[0])) {
-                    p.sendMessage(Utils.c(plugin.getConfig().getString("NotNumber")));
-                    return true;
-                }
-
-                long pin = Long.parseLong(args[0]);
-                int length = args[0].length();
-                if (length > plugin.getConfig().getInt("Lenght.Max") || length < plugin.getConfig().getInt("Lenght.Min")) {
-                    p.sendMessage(Utils.c(plugin.getConfig().getString("PinLenght")));
-                    return true;
-                }
-
-                MembersManager manager = plugin.getManager();
-                PIN PIN = plugin.getPin();
-                manager.getMember(p.getName()).setRegistered(true);
-                PIN.registerMember(p.getName(), pin);
-                manager.getMember(p.getName()).setPin(pin);
-
-                p.sendMessage(Utils.c(plugin.getConfig().getString("Created").replace("%pin%", String.valueOf(pin))));
+            long registerPIN = Long.parseLong(pin);
+            int length = pin.length();
+            if (length > plugin.getConfig().getInt("Lenght.Max") || length < plugin.getConfig().getInt("Lenght.Min")) {
+                p.sendMessage(Utils.c(plugin.getConfig().getString("PinLenght")));
+                return true;
             }
+
+            MembersManager manager = plugin.getManager();
+            PIN PIN = plugin.getPin();
+            manager.getMember(p.getName()).setRegistered(true);
+            PIN.registerMember(p.getName(), registerPIN);
+            manager.getMember(p.getName()).setPin(registerPIN);
+
+            p.sendMessage(Utils.c(plugin.getConfig().getString("Created").replace("%pin%", String.valueOf(registerPIN))));
+            return true;
         }
+
         return false;
     }
 }

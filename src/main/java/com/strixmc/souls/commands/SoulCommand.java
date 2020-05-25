@@ -4,19 +4,98 @@ import com.strixmc.souls.Security;
 import com.strixmc.souls.utilities.MembersManager;
 import com.strixmc.souls.utilities.PIN;
 import com.strixmc.souls.utilities.Utils;
+import me.fixeddev.ebcm.parametric.CommandClass;
+import me.fixeddev.ebcm.parametric.annotation.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class SoulCommand implements CommandExecutor {
+@ACommand(names = {"soul", "souls", "soulsecurity"}, desc = "Main SoulSecurity management command.", permission = "soul.admin", permissionMessage = "Sorry, but you do not have admin permissions to perform this command.")
+@Usage(usage = "/<command> <unregister, changepin>")
+public class SoulCommand implements CommandClass {
 
     private Security plugin;
 
     public SoulCommand(Security plugin) {
         this.plugin = plugin;
+    }
+
+    @ACommand(names = "", permission = "soul.admin", permissionMessage = "Sorry, but you do not have admin permissions to perform this command.")
+    public boolean command(@Injected CommandSender sender) {
+
+        for (String s : plugin.getConfig().getStringList("Help-Message")) {
+            sendMessage(sender, Utils.c(s));
+        }
+
+        return true;
+    }
+
+    @ACommand(names = "unregister", desc = "SoulSecurity unregister command.", permission = "soul.admin", permissionMessage = "Sorry, but you do not have admin permissions to perform this command.")
+    @Usage(usage = "/<command> unregister <player>")
+    public boolean unregisterCommand(@Injected(true) CommandSender sender, @Default("Missing") @Named("argument") String target) {
+
+        if (!target.equals("Missing")) {
+            PIN pin = plugin.getPin();
+            MembersManager manager = plugin.getManager();
+
+            if (!pin.containsMember(target)) {
+                sendMessage(sender, "&cThat player is not in the database.");
+                return true;
+            }
+            pin.unregisterMember(target);
+
+            if (manager.containsMember(target)) {
+                manager.removeMember(target);
+            }
+
+            sendMessage(sender, "&cPlayer has been removed.");
+
+            if (Bukkit.getPlayer(target) != null) {
+                Bukkit.getPlayer(target).kickPlayer(Utils.c("&cYou have been unregistered from PIN Security."));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @ACommand(names = "changepin", desc = "SoulSecurity changepin command.", permission = "soul.admin", permissionMessage = "Sorry, but you do not have admin permissions to perform this command.")
+    @Usage(usage = "/<command> changepin <player> <pin>")
+    public boolean changepinCommand(@Injected(true) CommandSender sender, @Default("Missing") @Named("target") String target, @Default("Missing") @Named("changed") String changed) {
+
+        PIN pin = plugin.getPin();
+        MembersManager manager = plugin.getManager();
+
+        if (!target.equals("Missing")) {
+            if (!pin.containsMember(target)) {
+                sendMessage(sender, "&cThat player is not in the database.");
+                return true;
+            }
+            if (!changed.equals("Missing")) {
+
+                if (!Utils.isNumeric(changed)) {
+                    sendMessage(sender, plugin.getConfig().getString("NotNumber"));
+                    return true;
+                }
+
+                long newpin = Long.parseLong(changed);
+                int length = changed.length();
+                if (length > plugin.getConfig().getInt("Lenght.Max") || length < plugin.getConfig().getInt("Lenght.Min")) {
+                    sendMessage(sender, plugin.getConfig().getString("PinLenght"));
+                    return true;
+                }
+
+                pin.setPIN(target, newpin);
+                sendMessage(sender, "Member " + pin.getMember(target) + " PIN has been changed to " + newpin);
+                if (Bukkit.getPlayer(target) != null) {
+                    Bukkit.getPlayer(target).sendMessage(Utils.c("&cYou PIN has been changed!"));
+                    manager.getMember(Bukkit.getPlayer(target).getName()).setPin(newpin);
+                    manager.getMember(Bukkit.getPlayer(target).getName()).setVerified(false);
+                }
+            }
+        }
+
+        return false;
     }
 
     private void sendMessage(CommandSender sender, String text) {
@@ -28,86 +107,4 @@ public class SoulCommand implements CommandExecutor {
         }
     }
 
-    private void sendHelp(CommandSender sender, String command) {
-        for (String s : plugin.getConfig().getStringList("Help-Message")) {
-            sendMessage(sender, s.replace("%command%", command));
-        }
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (sender instanceof Player) {
-            Player p = (Player) sender;
-            if (!p.hasPermission("soul.admin")) {
-                p.sendMessage(Utils.c(plugin.getConfig().getString("NoPermissions")));
-                return true;
-            }
-        }
-        if (args.length >= 1) {
-            PIN pin = plugin.getPin();
-            MembersManager manager = plugin.getManager();
-            if (args[0].equalsIgnoreCase("help")) {
-                sendHelp(sender, label);
-            } else if (args[0].equalsIgnoreCase("unregister")) {
-                if (args.length == 2) {
-                    String target = args[1];
-                    if (!pin.containsMember(target)) {
-                        sendMessage(sender, "&cThat player is not in the database.");
-                        return true;
-                    }
-                    pin.unregisterMember(target);
-
-                    if (manager.containsMember(target)) {
-                        manager.removeMember(target);
-                    }
-
-                    sendMessage(sender, "&cPlayer has been removed.");
-
-                    if (Bukkit.getPlayer(target) != null) {
-                        Bukkit.getPlayer(target).kickPlayer(Utils.c("&cYou have been unregistered from PIN Security."));
-                    }
-
-                } else {
-                    sendMessage(sender, "&cUsage: /" + label + " unregister <Player>");
-                }
-            } else if (args[0].equalsIgnoreCase("changepin")) {
-                if (args.length == 3) {
-                    String target = args[1];
-
-                    if (!pin.containsMember(target)) {
-                        sendMessage(sender, "&cThat player is not in the database.");
-                        return true;
-                    }
-
-                    if (!Utils.isNumeric(args[2])) {
-                        sendMessage(sender, plugin.getConfig().getString("NotNumber"));
-                        return true;
-                    }
-
-                    long newpin = Long.parseLong(args[2]);
-                    int length = args[2].length();
-                    if (length > plugin.getConfig().getInt("Lenght.Max") || length < plugin.getConfig().getInt("Lenght.Min")) {
-                        sendMessage(sender, plugin.getConfig().getString("PinLenght"));
-                        return true;
-                    }
-
-                    pin.setPIN(target, newpin);
-                    sendMessage(sender, "Member " + pin.getMember(target) + " PIN has been changed to " + newpin);
-                    if (Bukkit.getPlayer(target) != null) {
-                        Bukkit.getPlayer(target).sendMessage(Utils.c("&cYou PIN has been changed!"));
-                        manager.getMember(Bukkit.getPlayer(target).getName()).setPin(newpin);
-                        manager.getMember(Bukkit.getPlayer(target).getName()).setVerified(false);
-                    }
-
-                } else {
-                    sendMessage(sender, "&cUsage: /" + label + " changepin <Player> <PIN>");
-                }
-            } else {
-                sendHelp(sender, label);
-            }
-        } else {
-            sendHelp(sender, label);
-        }
-        return false;
-    }
 }
